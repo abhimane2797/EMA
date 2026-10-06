@@ -24,6 +24,7 @@ const mkAccess = (overrides: Partial<Record<string, boolean>> = {}) => ({
   taskManagement: true,
   assetManagement: true,
   incidentManagement: true,
+  ticketManagement: true,
   reportsDashboard: true,
   ...overrides
 });
@@ -81,7 +82,7 @@ export const mockUsers: User[] = [
     projectId:'proj-1', projectName:'Computerization of FSL', status:'Active',
     createdAt:'2024-01-20T09:00:00.000Z', effectiveEndDate:null,
     passwordChangedAt:new Date(Date.now()-12*24*3600*1000).toISOString(),
-    access: mkAccess({ assetManagement:false }),
+    access: mkAccess({ assetManagement:false, ticketManagement:false }),
     email:'sneha.kulkarni@gov.in'
   },
   {

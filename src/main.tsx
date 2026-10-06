@@ -9,6 +9,7 @@ import { useAuthStore } from './store/authStore';
 import { useUIStore } from './store/uiStore';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { setMswActive } from './mocks/mswStatus';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus:false } }
@@ -32,4 +33,17 @@ function App(){
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
+async function bootstrap(){
+  if (import.meta.env.DEV) {
+    try {
+      const { worker } = await import('./mocks/browser');
+      await worker.start({ onUnhandledRequest: 'bypass', quiet: true });
+      setMswActive(true);
+    } catch (err) {
+      console.warn('[msw] service worker unavailable, falling back to the in-memory mock store', err);
+    }
+  }
+  ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
+}
+
+bootstrap();

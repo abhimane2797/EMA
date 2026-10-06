@@ -7,6 +7,7 @@ import { PageHeader } from '../../components/PageHeader';
 const modules: {key:ModuleKey, label:string}[] = [
   { key:'projectManagement', label:'Project Mgmt' },
   { key:'taskManagement', label:'Task Mgmt' },
+  { key:'ticketManagement', label:'Ticket Mgmt' },
   { key:'assetManagement', label:'Asset Mgmt' },
   { key:'incidentManagement', label:'Incident Mgmt' },
   { key:'reportsDashboard', label:'Reports' },

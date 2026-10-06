@@ -1,6 +1,6 @@
 export type RoleType = 'Operations Manager' | 'Project Manager' | 'Technical Team Member';
 
-export type ModuleKey = 'projectManagement' | 'taskManagement' | 'assetManagement' | 'incidentManagement' | 'reportsDashboard';
+export type ModuleKey = 'projectManagement' | 'taskManagement' | 'assetManagement' | 'incidentManagement' | 'ticketManagement' | 'reportsDashboard';
 
 export type AccessFlags = Record<ModuleKey, boolean>;
 

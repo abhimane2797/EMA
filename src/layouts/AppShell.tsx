@@ -15,10 +15,13 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import BusinessIcon from '@mui/icons-material/Business';
 import PeopleIcon from '@mui/icons-material/People';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useUIStore } from '../store/uiStore';
 import { ModuleKey } from '../types';
+import { NotificationBell } from '../features/tickets/components/NotificationBell';
+import { ToastHost } from '../features/tickets/components/ToastHost';
 
 const drawerWidth = 260;
 const collapsedWidth = 72;
@@ -26,6 +29,7 @@ const collapsedWidth = 72;
 const moduleConfig: { key: ModuleKey | 'admin', label:string, icon:any, path:string, adminOnly?:boolean }[] = [
   { key:'projectManagement', label:'Project Management', icon: AccountTreeIcon, path:'/projects' },
   { key:'taskManagement', label:'Task Management', icon: AssignmentIcon, path:'/tasks' },
+  { key:'ticketManagement', label:'Ticket Management', icon: ConfirmationNumberIcon, path:'/tickets' },
   { key:'assetManagement', label:'Asset Management', icon: InventoryIcon, path:'/assets' },
   { key:'incidentManagement', label:'Incident Management', icon: ReportProblemIcon, path:'/incidents' },
   { key:'reportsDashboard', label:'Reports & Dashboard', icon: BarChartIcon, path:'/reports' },
@@ -130,6 +134,7 @@ export function AppShell() {
             <Typography variant="caption" color="text.secondary" noWrap>{user.projectName} • Government of Maharashtra — Forensic Science Laboratory</Typography>
           </Box>
           <Chip label={user.role} size="small" color={user.role==='Operations Manager'?'primary': user.role==='Project Manager'?'secondary':'default'} sx={{ display:{ xs:'none', md:'flex' } }} />
+          {user.access.ticketManagement && <NotificationBell />}
           <Tooltip title="Toggle theme"><IconButton onClick={toggleMode}>{mode==='light' ? <DarkModeIcon/> : <LightModeIcon/>}</IconButton></Tooltip>
           <IconButton onClick={(e)=>setAnchorEl(e.currentTarget)} sx={{ p:0 }}>
             <Avatar sx={{ bgcolor:'primary.main', width:36, height:36, fontSize:14 }}>{user.employeeName.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</Avatar>
@@ -157,6 +162,7 @@ export function AppShell() {
       <Box component="main" sx={{ flexGrow:1, p:{ xs:2, md:3 }, width:{ md:`calc(100% - ${effectiveDrawerWidth}px)` }, mt:'64px', minHeight:'calc(100vh - 64px)', bgcolor:'background.default' }}>
         <Outlet />
       </Box>
+      <ToastHost />
     </Box>
   );
 }

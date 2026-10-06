@@ -223,7 +223,7 @@ export const mockApi = {
       id:'u-'+Date.now(), loginId:u.loginId, employeeName:u.employeeName, designation:u.designation||'',
       role: (u.role as any)||'Technical Team Member', projectId:u.projectId||'proj-1', projectName: projects.find(p=>p.id===u.projectId)?.name || 'Computerization of FSL',
       status: (u.status as any)||'Active', createdAt:new Date().toISOString(), effectiveEndDate:u.effectiveEndDate||null,
-      passwordChangedAt:new Date().toISOString(), access: u.access || { projectManagement:true, taskManagement:true, assetManagement:true, incidentManagement:true, reportsDashboard:true },
+      passwordChangedAt:new Date().toISOString(), access: u.access || { projectManagement:true, taskManagement:true, assetManagement:true, incidentManagement:true, ticketManagement:true, reportsDashboard:true },
       email:u.email
     }; users.push(rec); return rec; },
   async updateUser(id:string, patch:Partial<User>) { await delay(); const i=users.findIndex(u=>u.id===id); if(i<0) throw new Error('not found'); users[i]={...users[i],...patch} as User; return users[i]; },

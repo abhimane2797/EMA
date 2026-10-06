@@ -35,6 +35,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (token && raw) {
       try {
         const user = JSON.parse(raw) as User;
+        // backfill module flags added after the session was persisted
+        const stored = (user.access || {}) as Partial<User['access']>;
+        user.access = {
+          projectManagement: stored.projectManagement ?? true,
+          taskManagement: stored.taskManagement ?? true,
+          assetManagement: stored.assetManagement ?? true,
+          incidentManagement: stored.incidentManagement ?? true,
+          ticketManagement: stored.ticketManagement ?? true,
+          reportsDashboard: stored.reportsDashboard ?? true,
+        };
         set({ user, token, isAuthenticated: true });
       } catch {}
     }
