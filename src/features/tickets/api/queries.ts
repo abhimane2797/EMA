@@ -9,7 +9,7 @@ import {
 import { CreateTicketInput, TicketPatch } from '../mocks/store';
 import { Paginated } from '../../../types';
 import { useAuthStore } from '../../../store/authStore';
-import { api } from '../../../api';
+import { mockApi } from '../../../api/mockApi';
 import { Project, User } from '../../../types';
 
 export const ticketKeys = {
@@ -111,7 +111,7 @@ function currentUser() {
 export function useTicketUsers() {
   return useQuery<User[]>({
     queryKey: ['tickets', 'users'],
-    queryFn: () => api.listUsers(),
+    queryFn: () => mockApi.listUsers(),
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -119,7 +119,7 @@ export function useTicketUsers() {
 export function useTicketProjects() {
   return useQuery<Project[]>({
     queryKey: ['tickets', 'projects'],
-    queryFn: () => api.listProjects(),
+    queryFn: () => mockApi.listProjects(),
     staleTime: 5 * 60 * 1000,
   });
 }

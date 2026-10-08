@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Paper, Typography, Stack, Button, Grid, Chip, Tabs, Tab, Divider, TextField, MenuItem, Alert, Snackbar, LinearProgress, Card, CardContent } from '@mui/material';
-import { api } from '../../api';
+import { mockApi } from '../../api/mockApi';
 import { ParentTask, ChildTask, Comment, BudgetEntry } from '../../types';
 import { StatusChip } from '../../components/StatusChip';
 import { fmtDate, fmtDateTime } from '../../utils';
 import { useAuthStore } from '../../store/authStore';
 import { CommentThread } from '../../components/CommentThread';
 import { FileUploader } from '../../components/FileUploader';
-import { SearchableSelect } from '../../components/SearchableSelect';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RTooltip } from 'recharts';
 
 function TabPanel({ children, value, index }: any) { return <Box hidden={value!==index} sx={{ pt:2 }}>{value===index && children}</Box>; }
@@ -28,29 +27,21 @@ export function ParentTaskDetail() {
   const [form, setForm] = useState<Partial<ParentTask>>({});
   const [toast, setToast] = useState<string|null>(null);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<{label:string,value:string}[]>([]);
 
   const load = async () => {
     if (!id) return;
     setLoading(true);
     try {
-      const p = await api.getParent(id);
+      const p = await mockApi.getParent(id);
       setTask(p); setForm(p);
-      const ch = await api.listChildren({ parentTaskId: id, page:1, pageSize:100 });
+      const ch = await mockApi.listChildren({ parentTaskId: id, page:1, pageSize:100 });
       setChildren(ch.data);
-      const cm = await api.listComments('parent', id);
+      const cm = await mockApi.listComments('parent', id);
       setComments(cm);
-      const bg = await api.listBudgets(id);
+      const bg = await mockApi.listBudgets(id);
       setBudgets(bg);
     } finally { setLoading(false); }
   };
-
-  useEffect(()=>{
-    if (!isPM) return;
-    api.listUsers()
-      .then(list=> setUsers(list.filter(u=>u.status==='Active').map(u=>({ label:`${u.employeeName} (${u.designation})`, value:u.id }))))
-      .catch(()=> setUsers([]));
-  }, [isPM]);
   useEffect(()=>{ load(); }, [id]);
 
   const handleSave = async () => {
@@ -65,7 +56,7 @@ export function ParentTaskDetail() {
       if (patch.startDate && patch.endDate && patch.startDate > patch.endDate) { setToast('Start must be ≤ End'); return; }
       if (patch.endDate && patch.dueDate && patch.endDate > patch.dueDate) { setToast('End must be ≤ Due'); return; }
     }
-    await api.updateParent(task.id, patch);
+    await mockApi.updateParent(task.id, patch);
     setToast('Parent task updated');
     setEdit(false);
     load();
@@ -73,12 +64,8 @@ export function ParentTaskDetail() {
 
   const addComment = async (text:string) => {
     if (!task) return;
-    try {
-      const c = await api.addComment({ entityType:'parent', entityId: task.id, authorId: user.id, authorName: user.employeeName, authorRole: user.role, text });
-      setComments(prev=> [...prev, c]);
-    } catch (e:any) {
-      setToast(e?.message || 'Could not post the comment');
-    }
+    const c = await mockApi.addComment({ entityType:'parent', entityId: task.id, authorId: user.id, authorName: user.employeeName, authorRole: user.role, text });
+    setComments(prev=> [...prev, c]);
   };
 
   if (loading) return <Paper sx={{ p:4 }}><LinearProgress /></Paper>;
@@ -119,11 +106,6 @@ export function ParentTaskDetail() {
             <Grid item xs={12} md={2}><TextField fullWidth type="date" label="End Date" InputLabelProps={{shrink:true}} value={form.endDate||''} onChange={e=>setForm({...form, endDate:e.target.value})} size="small" /></Grid>
             <Grid item xs={12} md={2}><TextField fullWidth type="date" label="Due Date" InputLabelProps={{shrink:true}} value={form.dueDate||''} onChange={e=>setForm({...form, dueDate:e.target.value})} disabled={isTech} size="small" /></Grid>
             <Grid item xs={12} md={3}><TextField fullWidth select label="Status" value={form.status||'New'} onChange={e=>setForm({...form, status:e.target.value as any})} size="small">{['New','In Progress','On Hold','Blocked','Completed'].map(s=> <MenuItem key={s} value={s}>{s}</MenuItem>)}</TextField></Grid>
-            {!isTech && (
-              <Grid item xs={12} md={3}>
-                <SearchableSelect label="Assign To" options={users} value={(form as any).ownerId||null} onChange={v=> setForm({...form, ownerId: v||''} as any)} placeholder="Task owner" />
-              </Grid>
-            )}
             <Grid item xs={12}><Stack direction="row" justifyContent="flex-end" spacing={1}><Button onClick={()=>setEdit(false)}>Cancel</Button><Button variant="contained" onClick={handleSave}>Save changes</Button></Stack></Grid>
           </Grid>
         </Paper>
@@ -202,21 +184,19 @@ export function ParentTaskDetail() {
 
 function BudgetTab({ parentTaskId, budgets, onRefresh, canEdit }: { parentTaskId:string, budgets:BudgetEntry[], onRefresh:()=>void, canEdit:boolean }) {
   const [title,setTitle]=useState(''); const [desc,setDesc]=useState(''); const [amount,setAmount]=useState('');
-  const [comment,setComment]=useState(''); const [saving,setSaving]=useState(false); const [error,setError]=useState<string|null>(null);
+  const [comment,setComment]=useState(''); const [saving,setSaving]=useState(false);
   const user = useAuthStore(s=>s.user)!;
   const [cmtList,setCmtList]=useState<Comment[]>([]);
-  useEffect(()=>{ api.listComments('budget', parentTaskId).then(setCmtList as any).catch(()=> setCmtList([])); }, [parentTaskId, budgets]);
+  useEffect(()=>{ mockApi.listComments('budget', parentTaskId).then(setCmtList as any); }, [parentTaskId, budgets]);
   const total = budgets.reduce((a,b)=> a+b.amount,0);
   const handleCreate = async () => {
     if (!title.trim() || !amount) return;
-    setSaving(true); setError(null);
+    setSaving(true);
     try {
-      await api.createBudget({ parentTaskId, title, description:desc, amount: Number(amount), attachments:[], createdBy:user.id, createdByName:user.employeeName } as any);
-      if (comment.trim()) await api.addComment({ entityType:'budget', entityId:parentTaskId, authorId:user.id, authorName:user.employeeName, authorRole:user.role, text: comment });
+      await mockApi.createBudget({ parentTaskId, title, description:desc, amount: Number(amount), attachments:[], createdBy:user.id, createdByName:user.employeeName } as any);
+      if (comment.trim()) await mockApi.addComment({ entityType:'budget', entityId:parentTaskId, authorId:user.id, authorName:user.employeeName, authorRole:user.role, text: comment });
       setTitle(''); setDesc(''); setAmount(''); setComment('');
       onRefresh();
-    } catch (e:any) {
-      setError(e?.message || 'Could not save the budget entry');
     } finally { setSaving(false); }
   };
   return (
@@ -237,7 +217,6 @@ function BudgetTab({ parentTaskId, budgets, onRefresh, canEdit }: { parentTaskId
       {canEdit ? (
         <Paper variant="outlined" sx={{ p:2, mt:2 }}>
           <Typography fontWeight={700} mb={1}>Add budget / cost entry</Typography>
-          {error && <Alert severity="error" sx={{ mb:1.5 }}>{error}</Alert>}
           <Grid container spacing={1.5}>
             <Grid item xs={12} md={6}><TextField fullWidth size="small" label="Title *" value={title} onChange={e=>setTitle(e.target.value)} /></Grid>
             <Grid item xs={12} md={3}><TextField fullWidth size="small" label="Amount (₹) *" type="number" value={amount} onChange={e=>setAmount(e.target.value)} /></Grid>

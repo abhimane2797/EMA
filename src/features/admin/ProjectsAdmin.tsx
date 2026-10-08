@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Paper, Button, TextField, Stack, Switch, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { api } from '../../api';
+import { mockApi } from '../../api/mockApi';
 import { Project } from '../../types';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -14,17 +14,17 @@ export function ProjectsAdmin() {
   const [code,setCode]=useState(''); const [name,setName]=useState(''); const [active,setActive]=useState(true);
   const [del,setDel]=useState<Project|null>(null);
 
-  const load = async ()=> setRows(await api.listProjects());
+  const load = async ()=> setRows(await mockApi.listProjects());
   useEffect(()=>{load();},[]);
 
   const handleSave = async () => {
     if (!code.trim() || !name.trim()) return;
-    if (editing) await api.updateProject(editing.id, { code, name, active });
-    else await api.createProject({ code, name, active });
+    if (editing) await mockApi.updateProject(editing.id, { code, name, active });
+    else await mockApi.createProject({ code, name, active });
     setOpen(false); setEditing(null); setCode(''); setName(''); load();
   };
   const startEdit = (p:Project)=>{ setEditing(p); setCode(p.code); setName(p.name); setActive(p.active); setOpen(true); };
-  const handleDelete = async ()=>{ if(del) { await api.deleteProject(del.id); setDel(null); load(); } };
+  const handleDelete = async ()=>{ if(del) { await mockApi.deleteProject(del.id); setDel(null); load(); } };
 
   return (
     <Box>

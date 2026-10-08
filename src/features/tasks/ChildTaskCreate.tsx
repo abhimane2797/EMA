@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { SearchableSelect } from '../../components/SearchableSelect';
 import { FileUploader } from '../../components/FileUploader';
-import { api } from '../../api';
+import { mockApi } from '../../api/mockApi';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../../components/PageHeader';
@@ -35,7 +35,6 @@ export function ChildTaskCreate() {
   const [files, setFiles] = useState<File[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [toast, setToast] = useState<string|null>(null);
-  const [meta, setMeta] = useState<{ taskTypes: string[]; statuses: string[] }>({ taskTypes: [], statuses: ['New','In Progress','On Hold','Blocked','Completed'] });
 
   const { register, handleSubmit, control, watch, formState:{ errors, isSubmitting } } = useForm<Values>({
     resolver: zodResolver(schema),
@@ -45,23 +44,22 @@ export function ChildTaskCreate() {
   const parentWatch = watch('parentTaskId');
 
   useEffect(()=>{
-    api.listParents({ page:1, pageSize:100 }).then(r=> setParents(r.data.map(p=>({label:`${p.id} — ${p.title}`, value:p.id}))));
-    api.listUsers().then(us=> setUsers(us.filter(u=>u.status==='Active').map(u=>({label:`${u.employeeName} (${u.designation})`, value:u.id})))).catch(()=> setUsers([]));
-    api.getTaskMeta().then(m=> setMeta({ taskTypes: m.taskTypes, statuses: m.statuses })).catch(()=> {});
+    mockApi.listParents({ page:1, pageSize:100 }).then(r=> setParents(r.data.map(p=>({label:`${p.id} — ${p.title}`, value:p.id}))));
+    mockApi.listUsers().then(us=> setUsers(us.filter(u=>u.status==='Active').map(u=>({label:`${u.employeeName} (${u.designation})`, value:u.id}))));
   }, []);
   useEffect(()=>{
-    api.listChildren({ page:1, pageSize:100 }).then(r=> setChildrenOpts(r.data.map(c=>({label:`${c.id} — ${c.title}`, value:c.id}))));
+    mockApi.listChildren({ page:1, pageSize:100 }).then(r=> setChildrenOpts(r.data.map(c=>({label:`${c.id} — ${c.title}`, value:c.id}))));
   }, []);
 
   const onSubmit = async (vals: Values) => {
     // create child
-    const rec:any = await api.createChild({
+    const rec:any = await mockApi.createChild({
       title: vals.title, taskType: vals.taskType, parentTaskId: vals.parentTaskId, linkedChildTaskId: vals.linkedChildTaskId||null,
       assignToId: vals.assignToId, assignToName:'', status: vals.status as any, startDate: vals.startDate, endDate: vals.endDate
     } as any);
     // upload files sequentially
     for (const f of files) {
-      const att:any = await api.addAttachment(rec.id, f);
+      const att:any = await mockApi.addAttachment(rec.id, f);
       setAttachments(prev=> [...prev, att]);
     }
     setToast(`Child task created — ${rec.id}`);
@@ -77,7 +75,7 @@ export function ChildTaskCreate() {
             <Grid item xs={12}><TextField fullWidth label="Title *" {...register('title')} error={!!errors.title} helperText={errors.title?.message} size="small" /></Grid>
             <Grid item xs={12} md={4}>
               <TextField fullWidth select label="Task Type *" {...register('taskType')} error={!!errors.taskType} helperText={errors.taskType?.message} size="small">
-                {meta.taskTypes.map(t=> <MenuItem key={t} value={t}>{t}</MenuItem>)}
+                {['Implementation','Procurement','Testing','Audit','Documentation','Support','Design'].map(t=> <MenuItem key={t} value={t}>{t}</MenuItem>)}
               </TextField>
             </Grid>
             <Grid item xs={12} md={4}>
@@ -95,7 +93,7 @@ export function ChildTaskCreate() {
                 <SearchableSelect label="Assign To" required options={users} value={field.value} onChange={field.onChange} error={!!errors.assignToId} helperText={errors.assignToId?.message} />
               )} />
             </Grid>
-            <Grid item xs={12} md={3}><TextField fullWidth select label="Status" {...register('status')} size="small">{meta.statuses.map(s=> <MenuItem key={s} value={s}>{s}</MenuItem>)}</TextField></Grid>
+            <Grid item xs={12} md={3}><TextField fullWidth select label="Status" {...register('status')} size="small"><MenuItem value="New">New</MenuItem><MenuItem value="In Progress">In Progress</MenuItem><MenuItem value="Blocked">Blocked</MenuItem><MenuItem value="Completed">Completed</MenuItem></TextField></Grid>
             <Grid item xs={12} md={2}><TextField fullWidth type="date" label="Start Date" InputLabelProps={{shrink:true}} {...register('startDate')} size="small" /></Grid>
             <Grid item xs={12} md={2}><TextField fullWidth type="date" label="Due / End Date" InputLabelProps={{shrink:true}} {...register('endDate')} size="small" /></Grid>
 
