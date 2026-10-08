@@ -122,7 +122,7 @@ export const mockParentTasks: ParentTask[] = [
     description:'Procurement of 12 rack servers for primary data center, including installation, testing and UAT. Vendor coordination required.',
     assetCategory:'IT Hardware', assetClass:'Server', assetSubType:'Rack', location:'Mumbai HQ',
     startDate:'2024-09-01', endDate:'2024-12-15', dueDate:'2024-12-31',
-    severity:'High', priority:'P1', purpose:'Implementation', status:'In Progress',
+    severity:'High', priority:'Critical', purpose:'New Setup', status:'In Progress',
     ownerId:'u-3', ownerName:'Pratik Mulgir', createdAt:'2024-08-20T10:00:00Z', updatedAt:'2024-11-01T12:00:00Z', progress:62
   },
   {
@@ -130,7 +130,7 @@ export const mockParentTasks: ParentTask[] = [
     description:'Comprehensive audit of firewall policies, IDS/IPS logs and vulnerability assessment across all FSL sites.',
     assetCategory:'Networking', assetClass:'Firewall', assetSubType:'Next-Gen', location:'Pune FSL',
     startDate:'2024-10-01', endDate:'2024-11-30', dueDate:'2024-12-10',
-    severity:'Critical', priority:'P1', purpose:'Audit', status:'Blocked',
+    severity:'Critical', priority:'Critical', purpose:'Compliance', status:'Blocked',
     ownerId:'u-3', ownerName:'Pratik Mulgir', createdAt:'2024-09-15T10:00:00Z', updatedAt:'2024-10-20T12:00:00Z', progress:35
   },
   {
@@ -138,7 +138,7 @@ export const mockParentTasks: ParentTask[] = [
     description:'Upgrade Laboratory Information Management System with new evidence tracking module and migration of legacy data.',
     assetCategory:'Software', assetClass:'Application', assetSubType:'', location:'Mumbai HQ',
     startDate:'2024-11-01', endDate:'2025-02-28', dueDate:'2025-03-15',
-    severity:'Medium', priority:'P2', purpose:'Upgrade', status:'New',
+    severity:'Medium', priority:'High', purpose:'Enhancement', status:'New',
     ownerId:'u-8', ownerName:'Rajesh Sharma', createdAt:'2024-10-25T10:00:00Z', updatedAt:'2024-10-25T10:00:00Z', progress:0
   },
   {
@@ -146,7 +146,7 @@ export const mockParentTasks: ParentTask[] = [
     description:'Installation of 48 camera points, biometric access and integration with central monitoring dashboard.',
     assetCategory:'Facility', assetClass:'CCTV', assetSubType:'', location:'Nagpur FSL',
     startDate:'2024-08-15', endDate:'2024-10-30', dueDate:'2024-11-05',
-    severity:'Low', priority:'P3', purpose:'Implementation', status:'Completed',
+    severity:'Low', priority:'Medium', purpose:'New Setup', status:'Completed',
     ownerId:'u-3', ownerName:'Pratik Mulgir', createdAt:'2024-08-01T10:00:00Z', updatedAt:'2024-10-30T10:00:00Z', progress:100
   },
   {
@@ -154,7 +154,7 @@ export const mockParentTasks: ParentTask[] = [
     description:'Annual calibration and certification of 25 workstations across 3 sites, OEM coordination and documentation.',
     assetCategory:'Lab Equipment', assetClass:'Forensic Kit', assetSubType:'', location:'Nashik FSL',
     startDate:'2024-09-10', endDate:'2024-11-10', dueDate:'2024-11-20',
-    severity:'High', priority:'P2', purpose:'Maintenance', status:'On Hold',
+    severity:'High', priority:'High', purpose:'Maintenance', status:'On Hold',
     ownerId:'u-3', ownerName:'Pratik Mulgir', createdAt:'2024-09-05T10:00:00Z', updatedAt:'2024-10-18T10:00:00Z', progress:45
   },
   {
@@ -162,7 +162,7 @@ export const mockParentTasks: ParentTask[] = [
     description:'Secondary MPLS link provisioning for Pune & Nagpur, failover testing and documentation.',
     assetCategory:'Networking', assetClass:'Router', assetSubType:'Edge', location:'Pune FSL',
     startDate:'2024-10-15', endDate:'2024-12-20', dueDate:'2024-12-25',
-    severity:'High', priority:'P1', purpose:'Implementation', status:'In Progress',
+    severity:'High', priority:'Critical', purpose:'New Setup', status:'In Progress',
     ownerId:'u-3', ownerName:'Pratik Mulgir', createdAt:'2024-10-01T10:00:00Z', updatedAt:'2024-10-28T12:00:00Z', progress:55
   },
 ];

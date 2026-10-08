@@ -1,6 +1,6 @@
 // In-memory mock API that mimics REST. Delay 300-500ms.
-import { mockUsers, mockParentTasks, mockChildTasks, mockComments, mockBudgets, mockProjects, mockCostCenters, mockMappings } from '../mocks/data';
-import { ParentTask, ChildTask, Comment, BudgetEntry, Project, CostCenter, Mapping, User } from '../types';
+import { mockUsers, mockParentTasks, mockChildTasks, mockComments, mockBudgets, mockProjects, mockCostCenters, mockMappings, assetOptions, locations } from '../mocks/data';
+import { AuthResponse, ParentTask, ChildTask, Comment, BudgetEntry, Project, CostCenter, Mapping, TaskMeta, User } from '../types';
 import { isPasswordExpired, genId } from '../utils';
 
 const delay = (ms=350) => new Promise(r=>setTimeout(r, ms));
@@ -24,7 +24,7 @@ function calcProgress(parentId: string) {
 
 export const mockApi = {
   // auth
-  async login(loginId: string, password: string) {
+  async login(loginId: string, password: string): Promise<AuthResponse> {
     await delay();
     // password is mock: any non-empty equals "Password@123" else fail; but we allow any for demo unless empty
     const user = users.find(u=>u.loginId.toLowerCase()===loginId.toLowerCase());
@@ -229,6 +229,31 @@ export const mockApi = {
   async updateUser(id:string, patch:Partial<User>) { await delay(); const i=users.findIndex(u=>u.id===id); if(i<0) throw new Error('not found'); users[i]={...users[i],...patch} as User; return users[i]; },
   async deleteUser(id:string){ await delay(); users=users.filter(u=>u.id!==id); return true; },
   async resetPassword(userId:string){ await delay(); const u=users.find(x=>x.id===userId); if(u) u.passwordChangedAt=new Date().toISOString(); return { message:'Password reset to default. User must change on next login.' }; },
+
+  // Dropdown option lists — the real client fetches GET /tasks/meta.
+  async getTaskMeta(): Promise<TaskMeta> {
+    await delay(120);
+    return {
+      assetCategories: [...assetOptions.categories],
+      assetClasses: [...new Set(Object.values(assetOptions.classes).flat())],
+      assetSubTypes: [...new Set(Object.values(assetOptions.subTypes).flat())],
+      locations: [...locations],
+      purposes: ['New Setup','Replacement','Maintenance','Enhancement','Support','Compliance','Other'],
+      taskTypes: ['Development','Testing','Installation','Configuration','Deployment','Maintenance','Documentation','Training','Other'],
+      statuses: ['New','In Progress','On Hold','Blocked','Completed'],
+      severities: ['Low','Medium','High','Critical'],
+      priorities: ['Low','Medium','High','Critical'],
+    };
+  },
+
+  /** Mock attachments use blob: URLs, so the "download" is just the URL. */
+  async downloadAttachment(_kind: 'parent' | 'child' | 'budget', _docRef: string, attachmentId: string) {
+    await delay(80);
+    const pool = [...children.flatMap(c=>c.attachments), ...budgets.flatMap(b=>b.attachments)];
+    const found = pool.find(a=>a.id===attachmentId);
+    if (!found) throw { response:{ status:404, data:{ message:'Attachment not found' } } };
+    return found.url;
+  },
 
   // helpers
   getUsersSync(){ return users; },

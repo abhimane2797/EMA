@@ -7,9 +7,32 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { mockApi } from '../../api/mockApi';
+import { api, isMockMode } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import { isPasswordExpired } from '../../utils';
+
+/** Demo credentials: the mock store's users, or the seeded backend users. */
+const DEMO = isMockMode
+  ? {
+      password: 'Password@123',
+      accounts: [
+        { id:'rishikesh.oza', label:'Rishikesh Oza — Operations Manager (Director)', color:'primary' },
+        { id:'pratik.mulgir', label:'Pratik Mulgir — Project Manager', color:'secondary' },
+        { id:'gaurav.bhangale', label:'Gaurav Bhangale — Technical Member', color:'default' },
+        { id:'ananya.singh', label:'Ananya Singh — Expired password (90d)', color:'warning' },
+        { id:'vikas.patil', label:'Vikas Patil — Inactive account', color:'error' },
+      ],
+    }
+  : {
+      // Accounts from the Master Configuration seed (npm run seed).
+      password: 'Pass@123',
+      accounts: [
+        { id:'Pratik.Mulgir', label:'Pratik Mulgir — Project Manager', color:'secondary' },
+        { id:'Rishikesh.Oza', label:'Rishikesh Oza — Operations Manager (Director)', color:'primary' },
+        { id:'Tanmay.Halaye', label:'Tanmay Halaye — Operations Manager (Director)', color:'primary' },
+        { id:'Yogesh.Hagawane', label:'Yogesh Hagawane — Technical Member', color:'default' },
+      ],
+    };
 
 const schema = z.object({
   loginId: z.string().min(2, 'Login ID is required'),
@@ -30,7 +53,7 @@ export function LoginPage() {
   const onSubmit = async (vals: FormValues) => {
     setError(null); setInfo(null);
     try {
-      const res = await mockApi.login(vals.loginId, vals.password);
+      const res = await api.login(vals.loginId, vals.password);
       if ((res as any).passwordExpired) {
         // store temp and go to change password
         localStorage.setItem('ema_temp_user', JSON.stringify((res as any).user));
@@ -49,7 +72,7 @@ export function LoginPage() {
     // helper to quick fill
     const el1 = document.querySelector<HTMLInputElement>('input[name="loginId"]');
     const el2 = document.querySelector<HTMLInputElement>('input[name="password"]');
-    if (el1 && el2) { el1.value=id; el2.value='Password@123'; el1.dispatchEvent(new Event('input',{bubbles:true})); el2.dispatchEvent(new Event('input',{bubbles:true})); }
+    if (el1 && el2) { el1.value=id; el2.value=DEMO.password; el1.dispatchEvent(new Event('input',{bubbles:true})); el2.dispatchEvent(new Event('input',{bubbles:true})); }
   };
 
   return (
@@ -101,20 +124,16 @@ export function LoginPage() {
               }}
             />
             <Button fullWidth type="submit" variant="contained" size="large" disabled={isSubmitting} sx={{ mt:2, py:1.3 }}>{isSubmitting ? 'Signing in…' : 'Sign in'}</Button>
-            <Typography variant="caption" color="text.secondary" display="block" mt={1.5} textAlign="center">Demo password for all users: <b>Password@123</b></Typography>
+            <Typography variant="caption" color="text.secondary" display="block" mt={1.5} textAlign="center">
+              Demo password for all users: <b>{DEMO.password}</b>{isMockMode ? ' (mock data)' : ' (seeded backend)'}
+            </Typography>
           </Box>
 
           <Divider sx={{ my:3 }} />
 
           <Typography variant="caption" fontWeight={700} color="text.secondary">QUICK DEMO LOGINS — click to fill</Typography>
           <Stack spacing={1} mt={1.5}>
-            {[
-              { id:'rishikesh.oza', label:'Rishikesh Oza — Operations Manager (Director)', color:'primary' },
-              { id:'pratik.mulgir', label:'Pratik Mulgir — Project Manager', color:'secondary' },
-              { id:'gaurav.bhangale', label:'Gaurav Bhangale — Technical Member', color:'default' },
-              { id:'ananya.singh', label:'Ananya Singh — Expired password (90d)', color:'warning' },
-              { id:'vikas.patil', label:'Vikas Patil — Inactive account', color:'error' },
-            ].map(u=> (
+            {DEMO.accounts.map(u=> (
               <Button key={u.id} variant="outlined" size="small" onClick={()=>{
                 // set values via DOM + react-hook-form set? Simpler: navigate with prefill? We'll just set via form API by reloading? Use hack: set input values then submit programmatically requires trigger
                 const loginInput = document.querySelector<HTMLInputElement>('input[name="loginId"]');
@@ -128,7 +147,7 @@ export function LoginPage() {
                     el.dispatchEvent(new Event('input', { bubbles: true }));
                   };
                   setVal(loginInput, u.id);
-                  setVal(pwdInput, 'Password@123');
+                  setVal(pwdInput, DEMO.password);
                 }
               }} sx={{ justifyContent:'flex-start', textTransform:'none', fontSize:12 }}>{u.label}</Button>
             ))}
