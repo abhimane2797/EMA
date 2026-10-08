@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Paper, Typography, Stack, Button, Grid, TextField, MenuItem, Chip, Alert, Snackbar, Divider, Card } from '@mui/material';
-import { mockApi } from '../../api/mockApi';
+import { api } from '../../api';
 import { ChildTask, Comment, Attachment, ParentTask } from '../../types';
 import { StatusChip } from '../../components/StatusChip';
 import { fmtDateTime, fmtDate } from '../../utils';
@@ -28,13 +28,16 @@ export function ChildTaskDetail() {
 
   const load = async () => {
     if (!id) return;
-    const t = await mockApi.getChild(id);
+    const t = await api.getChild(id);
     setTask(t); setForm(t);
-    if (t.parentTaskId) { try { const p:any = await mockApi.getParent(t.parentTaskId); setParent(p); } catch {} }
-    const cm = await mockApi.listComments('child', id);
+    if (t.parentTaskId) { try { const p:any = await api.getParent(t.parentTaskId); setParent(p); } catch {} }
+    const cm = await api.listComments('child', id);
     setComments(cm);
-    const us = await mockApi.listUsers();
-    setUsers(us.filter(u=>u.status==='Active').map(u=>({label:`${u.employeeName} (${u.designation})`, value:u.id})));
+    // `/users` is manager-only on the backend, so a technical member gets a
+    // curated list: the current assignee plus the session user.
+    await api.listUsers()
+      .then(us=> setUsers(us.filter(u=>u.status==='Active').map(u=>({label:`${u.employeeName} (${u.designation})`, value:u.id}))))
+      .catch(()=> setUsers([{ label: `${user.employeeName} (${user.designation})`, value: user.id }]));
   };
   useEffect(()=>{ load(); }, [id]);
 
@@ -48,7 +51,7 @@ export function ChildTaskDetail() {
       patch.parentTaskId = task.parentTaskId;
     }
     if (newActivity.trim()) { patch.newActivity = newActivity; patch.authorId = user.id; }
-    await mockApi.updateChild(task.id, patch);
+    await api.updateChild(task.id, patch);
     setToast('Child task updated');
     setNewActivity('');
     setEdit(false);
@@ -57,14 +60,14 @@ export function ChildTaskDetail() {
 
   const addComment = async (text:string) => {
     if (!task) return;
-    const c= await mockApi.addComment({ entityType:'child', entityId: task.id, authorId:user.id, authorName:user.employeeName, authorRole:user.role, text } as any);
+    const c= await api.addComment({ entityType:'child', entityId: task.id, authorId:user.id, authorName:user.employeeName, authorRole:user.role, text } as any);
     setComments(prev=>[...prev, c]);
   };
 
   const handleFiles = async (files: File[]) => {
     if (!task) return;
     for (const f of files) {
-      await mockApi.addAttachment(task.id, f);
+      await api.addAttachment(task.id, f);
     }
     load();
     setToast('Attachment uploaded');
@@ -73,9 +76,14 @@ export function ChildTaskDetail() {
     if (!task) return;
     setTask(prev=> prev ? {...prev, attachments: prev.attachments.filter(a=>a.id!==attId)} : prev);
   };
-  const handleDownload = (a: Attachment) => {
-    if (a.url.startsWith('blob:')) { window.open(a.url, '_blank'); }
-    else { window.open(a.url, '_blank'); }
+  const handleDownload = async (a: Attachment) => {
+    if (!task) return;
+    try {
+      const url = a.url || await api.downloadAttachment('child', task.id, a.id);
+      window.open(url, '_blank');
+    } catch (e:any) {
+      setToast(e?.message || 'Download failed');
+    }
   };
 
   if (!task) return <Paper sx={{p:4}}><Typography>Loading…</Typography></Paper>;

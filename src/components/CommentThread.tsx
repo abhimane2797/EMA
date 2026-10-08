@@ -22,7 +22,7 @@ export function CommentThread({ comments, onAdd, canAdd=true }: { comments: Comm
                 <Box flex={1} minWidth={0}>
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <Typography variant="subtitle2" fontWeight={700}>{c.authorName}</Typography>
-                    <Typography variant="caption" sx={{ bgcolor:'action.hover', px:0.8, py:0.2, borderRadius:1 }}>{c.authorRole}</Typography>
+                    {c.authorRole && <Typography variant="caption" sx={{ bgcolor:'action.hover', px:0.8, py:0.2, borderRadius:1 }}>{c.authorRole}</Typography>}
                     <Typography variant="caption" color="text.secondary">{fmtDateTime(c.createdAt)}</Typography>
                   </Stack>
                   <Typography variant="body2" mt={0.6} sx={{ whiteSpace:'pre-wrap' }}>{c.text}</Typography>

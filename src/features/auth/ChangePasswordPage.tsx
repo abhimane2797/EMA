@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { mockApi } from '../../api/mockApi';
+import { api } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 
 const schema = z.object({
@@ -34,10 +34,10 @@ export function ChangePasswordPage() {
     setErr(null); setMsg(null);
     try {
       if (!user) throw new Error('Session expired, please login again');
-      await mockApi.changePassword(user.id, v.oldPassword, v.newPassword);
+      await api.changePassword(user.id, v.oldPassword, v.newPassword);
       setMsg('Password changed successfully. Signing you in…');
       // auto login
-      const res:any = await mockApi.login(user.loginId, v.newPassword);
+      const res:any = await api.login(user.loginId, v.newPassword);
       login(res.user, res.token);
       localStorage.removeItem('ema_temp_user');
       setTimeout(()=> navigate('/tasks'), 800);

@@ -1,12 +1,12 @@
 import { Box, Grid, Paper, Typography, Stack, LinearProgress, Chip } from '@mui/material';
 import { PageHeader } from '../components/PageHeader';
-import { mockApi } from '../api/mockApi';
+import { api } from '../api';
 import { useEffect, useState } from 'react';
 import { ParentTask } from '../types';
 
 export function Dashboard(){
   const [tasks,setTasks]=useState<ParentTask[]>([]);
-  useEffect(()=>{ mockApi.listParents({ page:1, pageSize:100 }).then(r=> setTasks(r.data)); },[]);
+  useEffect(()=>{ api.listParents({ page:1, pageSize:100 }).then(r=> setTasks(r.data)); },[]);
   const total=tasks.length;
   const completed=tasks.filter(t=>t.status==='Completed').length;
   const inProg=tasks.filter(t=>t.status==='In Progress').length;

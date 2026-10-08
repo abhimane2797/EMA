@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Paper, TextField, Stack, MenuItem, Button, Typography } from '@mui/material';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusChip } from '../../components/StatusChip';
-import { mockApi } from '../../api/mockApi';
+import { api } from '../../api';
 import { ChildTask } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '../../utils';
@@ -14,7 +14,7 @@ export function ChildTaskList() {
 
   const fetch = async () => {
     setLoading(true); setError(null);
-    try { const r=await mockApi.listChildren({ q: q||undefined, status: status||undefined, page, pageSize }); setRows(r.data); setTotal(r.total); } catch(e:any){ setError(e.message); } finally{ setLoading(false); }
+    try { const r=await api.listChildren({ q: q||undefined, status: status||undefined, page, pageSize }); setRows(r.data); setTotal(r.total); } catch(e:any){ setError(e.message); } finally{ setLoading(false); }
   };
   useEffect(()=>{fetch();}, [q, status, page, pageSize]);
 

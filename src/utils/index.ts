@@ -22,6 +22,8 @@ export const statusColor = (s: string) => {
     case 'On Hold': return 'warning';
     case 'Blocked': return 'error';
     case 'Completed': return 'success';
+    case 'Closed': return 'success';
+    case 'Cancelled': return 'default';
     // Ticket workflow
     case 'Backlog': return 'default';
     case 'To Do': return 'default';
@@ -34,9 +36,9 @@ export const statusColor = (s: string) => {
 };
 
 export const priorityColor = (p: string) => {
-  if (p==='P1') return 'error';
-  if (p==='P2') return 'warning';
-  if (p==='P3') return 'info';
+  if (p==='Critical') return 'error';
+  if (p==='High') return 'warning';
+  if (p==='Medium') return 'info';
   return 'default';
 };
 

@@ -3,7 +3,7 @@ import { Box, Paper, Button, TextField, Stack, Typography, IconButton, Dialog, D
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningIcon from '@mui/icons-material/Warning';
-import { mockApi } from '../../api/mockApi';
+import { api } from '../../api';
 import { Mapping, Project, CostCenter } from '../../types';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -19,7 +19,7 @@ export function MappingsAdmin(){
   const [del,setDel]=useState<Mapping|null>(null);
   const [error,setError]=useState<string|null>(null);
 
-  const load = async ()=>{ setRows(await mockApi.listMappings()); setProjects(await mockApi.listProjects()); setCcs(await mockApi.listCostCenters()); };
+  const load = async ()=>{ setRows(await api.listMappings()); setProjects(await api.listProjects()); setCcs(await api.listCostCenters()); };
   useEffect(()=>{load();},[]);
 
   const totals = useMemo(()=>{
@@ -52,11 +52,16 @@ export function MappingsAdmin(){
   const handleSave = async () => {
     if (!validate()) return;
     const payload={ projectId:form.projectId, costCenterId:form.costCenterId, allocationPct:Number(form.allocationPct), effectiveStart:form.effectiveStart, effectiveEnd:form.effectiveEnd };
-    if (editing) await mockApi.updateMapping(editing.id, payload); else await mockApi.createMapping(payload as any);
-    setOpen(false); setEditing(null); setForm({projectId:'',costCenterId:'',allocationPct:'',effectiveStart:'',effectiveEnd:''}); load();
+    try {
+      if (editing) await api.updateMapping(editing.id, payload); else await api.createMapping(payload as any);
+      setOpen(false); setEditing(null); setForm({projectId:'',costCenterId:'',allocationPct:'',effectiveStart:'',effectiveEnd:''}); load();
+    } catch (e:any) {
+      // Backend enforces allocation <= 100%, end > start and no overlapping ranges.
+      setError(e?.message || 'Could not save the mapping');
+    }
   };
   const startEdit=(m:Mapping)=>{ setEditing(m); setForm({projectId:m.projectId, costCenterId:m.costCenterId, allocationPct:String(m.allocationPct), effectiveStart:m.effectiveStart, effectiveEnd:m.effectiveEnd}); setOpen(true); setError(null); };
-  const handleDelete=async()=>{ if(del){await mockApi.deleteMapping(del.id); setDel(null); load();}};
+  const handleDelete=async()=>{ if(del){await api.deleteMapping(del.id); setDel(null); load();}};
 
   return (
     <Box>
@@ -96,7 +101,7 @@ export function MappingsAdmin(){
         <DialogTitle>{editing?'Edit':'Add'} Mapping</DialogTitle>
         <DialogContent>
           <Stack spacing={2} mt={1}>
-            {error && <Alert severity={error.startsWith('Warning')?'warning':'error'}>{error}</Alert>}
+            {error && <Alert severity={error.startsWith('Warning')?'warning':'error'} sx={{ whiteSpace:'pre-wrap' }}>{error}</Alert>}
             <TextField select label="Project *" value={form.projectId} onChange={e=>setForm({...form, projectId:e.target.value})} size="small">{projects.map(p=> <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}</TextField>
             <TextField select label="Cost Center *" value={form.costCenterId} onChange={e=>setForm({...form, costCenterId:e.target.value})} size="small">{ccs.map(c=> <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}</TextField>
             <TextField label="Allocation %" type="number" value={form.allocationPct} onChange={e=>setForm({...form, allocationPct:e.target.value})} size="small" inputProps={{min:0,max:100}} helperText="0–100" />
