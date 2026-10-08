@@ -21,24 +21,10 @@ export interface User {
   email?: string;
 }
 
-export type TaskStatus = 'New' | 'In Progress' | 'On Hold' | 'Blocked' | 'Completed' | 'Closed' | 'Cancelled';
+export type TaskStatus = 'New' | 'In Progress' | 'On Hold' | 'Blocked' | 'Completed';
 export type Severity = 'Low' | 'Medium' | 'High' | 'Critical';
-/** Priority uses the same value set the backend validates (GET /tasks/meta). */
-export type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
-export type TaskPurpose = 'New Setup' | 'Replacement' | 'Maintenance' | 'Enhancement' | 'Support' | 'Compliance' | 'Other';
-
-/** Dropdown option lists served by GET /tasks/meta (see master_backend config/task-options.ts). */
-export interface TaskMeta {
-  assetCategories: string[];
-  assetClasses: string[];
-  assetSubTypes: string[];
-  locations: string[];
-  purposes: string[];
-  taskTypes: string[];
-  statuses: string[];
-  severities: string[];
-  priorities: string[];
-}
+export type Priority = 'P1' | 'P2' | 'P3' | 'P4';
+export type TaskPurpose = 'Implementation' | 'Maintenance' | 'Audit' | 'Training' | 'Upgrade' | 'Support';
 
 export interface ParentTask {
   id: string; // TSK-0001
@@ -93,7 +79,7 @@ export interface Comment {
   entityId: string;
   authorId: string;
   authorName: string;
-  authorRole: RoleType | '';
+  authorRole: RoleType;
   text: string;
   createdAt: string;
 }

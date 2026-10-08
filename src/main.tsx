@@ -34,9 +34,6 @@ function App(){
 }
 
 async function bootstrap(){
-  // Restore the persisted session before the first render, otherwise the
-  // route guards see an empty store and bounce deep links to /login.
-  useAuthStore.getState().hydrate();
   if (import.meta.env.DEV) {
     try {
       const { worker } = await import('./mocks/browser');

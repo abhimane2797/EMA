@@ -5,7 +5,7 @@ export function StatusChip({ status, size='small' }: { status:string, size?: 'sm
   return <Chip label={status} color={statusColor(status) as any} size={size} variant={status==='New' ? 'outlined' : 'filled'} sx={{ fontWeight:600, minWidth:84 }} />;
 }
 export function PriorityChip({ priority }: { priority:string }) {
-  const map: any = { Critical:'error', High:'warning', Medium:'info', Low:'default' };
+  const map: any = { P1:'error', P2:'warning', P3:'info', P4:'default' };
   return <Chip label={priority} color={map[priority]||'default'} size="small" sx={{ fontWeight:700 }} />;
 }
 export function SeverityChip({ severity }: { severity:string }) {

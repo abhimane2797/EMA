@@ -2,11 +2,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { Box, Paper, TextField, Stack, MenuItem, Button, Chip, Typography, LinearProgress, Skeleton } from '@mui/material';
 import { DataTable, Column } from '../../components/DataTable';
 import { StatusChip, PriorityChip, SeverityChip } from '../../components/StatusChip';
-import { api } from '../../api';
-import { ParentTask, Priority } from '../../types';
+import { mockApi } from '../../api/mockApi';
+import { ParentTask } from '../../types';
 import { fmtDate } from '../../utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { locations } from '../../mocks/data';
 
 export function ParentTaskList() {
   const user = useAuthStore(s=>s.user)!;
@@ -23,19 +24,11 @@ export function ParentTaskList() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string|null>(null);
-  const [locations, setLocations] = useState<string[]>([]);
-  const [priorities, setPriorities] = useState<Priority[]>(['Low','Medium','High','Critical']);
-
-  useEffect(()=>{
-    api.getTaskMeta()
-      .then(m=> { setLocations(m.locations); setPriorities(m.priorities as Priority[]); })
-      .catch(()=> {});
-  }, []);
 
   const fetch = async () => {
     setLoading(true); setError(null);
     try {
-      const res = await api.listParents({ q: q||undefined, status: status||undefined, priority: priority||undefined, severity: severity||undefined, location: location||undefined, page, pageSize, sortBy:'dueDate', sortDir, forUserId: user.id });
+      const res = await mockApi.listParents({ q: q||undefined, status: status||undefined, priority: priority||undefined, severity: severity||undefined, location: location||undefined, page, pageSize, sortBy:'dueDate', sortDir, forUserId: user.id });
       setRows(res.data); setTotal(res.total);
     } catch (e:any) { setError(e.message||'Failed to load'); }
     finally { setLoading(false); }
@@ -60,7 +53,7 @@ export function ParentTaskList() {
         <Stack direction={{ xs:'column', md:'row' }} spacing={1.5} alignItems={{ md:'center' }} flexWrap="wrap">
           <TextField size="small" placeholder="Search Task ID / Title / Category" value={q} onChange={e=>{setQ(e.target.value); setPage(1);}} sx={{ minWidth:260, flex:1 }} />
           <TextField select size="small" label="Status" value={status} onChange={e=>{setStatus(e.target.value); setPage(1);}} sx={{ minWidth:140 }}><MenuItem value="">All</MenuItem>{['New','In Progress','On Hold','Blocked','Completed'].map(s=> <MenuItem key={s} value={s}>{s}</MenuItem>)}</TextField>
-          <TextField select size="small" label="Priority" value={priority} onChange={e=>{setPriority(e.target.value); setPage(1);}} sx={{ minWidth:140 }}><MenuItem value="">All</MenuItem>{priorities.map(p=> <MenuItem key={p} value={p}>{p}</MenuItem>)}</TextField>
+          <TextField select size="small" label="Priority" value={priority} onChange={e=>{setPriority(e.target.value); setPage(1);}} sx={{ minWidth:120 }}><MenuItem value="">All</MenuItem>{['P1','P2','P3','P4'].map(p=> <MenuItem key={p} value={p}>{p}</MenuItem>)}</TextField>
           <TextField select size="small" label="Severity" value={severity} onChange={e=>{setSeverity(e.target.value); setPage(1);}} sx={{ minWidth:130 }}><MenuItem value="">All</MenuItem>{['Low','Medium','High','Critical'].map(s=> <MenuItem key={s} value={s}>{s}</MenuItem>)}</TextField>
           <TextField select size="small" label="Location" value={location} onChange={e=>{setLocation(e.target.value); setPage(1);}} sx={{ minWidth:150 }}><MenuItem value="">All</MenuItem>{locations.map(l=> <MenuItem key={l} value={l}>{l}</MenuItem>)}</TextField>
           <Button variant="outlined" onClick={()=>{setQ('');setStatus('');setPriority('');setSeverity('');setLocation('');setPage(1);}}>Clear</Button>
